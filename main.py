@@ -1,15 +1,16 @@
 #!/bin/python3
-from pyndb import PYNDatabase
+# from pyndb import PYNDatabase
+from pyntree import Node
 import os
 
 loc = os.getenv('HOME') + '/.config/'
-db = PYNDatabase(loc + 'hymbk.pyndb', autosave=True)
+db = Node(loc + 'hymbk.pyndb', autosave=True)
 
 
 # First-time setup
 if not db.has('bb'):
-    db.create('bb')
-    db.create('special')
+    db.bb = {}
+    db.special = {}
 
 
 def clear():
@@ -60,13 +61,13 @@ def parse_reqs(songs):
                 printed[song] = True
             else:
                 printed[song] = False
-                db.bb.create(song)
+                db.bb.set(song, {})
         else:
             if db.special.has(song):
                 printed[song] = True
             else:
                 printed[song] = False
-                db.special.create(song)
+                db.special.set(song, {})
     return printed
 
 
@@ -102,21 +103,21 @@ def single(add):
         if r == '0':
             break
         elif add:
-            try:
-                if r.isdigit():
-                    db.bb.create(r)
-                else:
-                    db.special.create(r)
-            except PYNDatabase.Universal.Error.AlreadyExists:
+            if db.bb.has(r) or db.special.has(r):
                 print('That song has already been added!')
+            else:
+                if r.isdigit():
+                    db.bb.set(r, {})
+                else:
+                    db.special.set(r, {})
         else:
-            try:
+            if not db.bb.has(r) and not db.special.has(r):
+                print('Song not found!')
+            else:
                 if r.isdigit():
                     db.bb.delete(r)
                 else:
                     db.special.delete(r)
-            except PYNDatabase.Universal.Error.DoesntExist:
-                print('Song not found!')
 
 
 def importer():
@@ -137,10 +138,10 @@ def importer():
 
 def view():
     print('From the hymnbook:')
-    for song in db.bb.values():
+    for song in db.bb._values:
         print(song)
     print('Others:')
-    for song in db.special.values():
+    for song in db.special._values:
         print(song)
     input('Press enter to continue...')
 
