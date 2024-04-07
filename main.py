@@ -1,5 +1,4 @@
 #!/bin/python3
-# from pyndb import PYNDatabase
 from pyntree import Node
 import os
 
